@@ -1,5 +1,5 @@
 <?php
-    
+
     if (isset($_POST['logout']) && $_POST['logout'] == 'out') {
         session_destroy();
 
@@ -16,12 +16,21 @@
             <p class="mt-5 mb-3 text-muted">&copy 2018</p>
         </form>
 <?php 
-    } else {
+    } elseif (empty($_POST['phoneNumber'])) {
+?>
+        <form class='form-signin mt-5' action='index.php' method='post' style="width: 30%; min-width: 350px; margin: auto;">
+            <h1 class="h3 mb-3 font-weight-normal">Pleae sign in</h1>
+            <input class="mb-3 btn-block" type='text' placeholder='your phone number' name='phoneNumber'>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+            <p class="mt-5 mb-3 text-muted">&copy 2018</p>
+        </form>
+<?php
+    } else{
         $password = getPassword();
         $_SESSION['one_time_password'] = $password;
 
         if (!empty($_POST['phoneNumber'])) {
-            sendSMS($password, $_POST['phoneNumber']);
+            sendSMS($password, '38'.$_POST['phoneNumber']);
         }
 ?>
         <form class='form-signin mt-5' action='index.php' method='post' style="width: 30%; min-width: 350px; margin: auto;">
@@ -49,13 +58,28 @@
     }
 
     function sendSMS($password, $phone) {
-        $db = new PDO('mysql:host = 94.249.146.189; dbname = users', 'Marich', 'marich1986');
 
-        $sms = $db->prepare("insert into Marich set number = ':phone', message = ':password', sender = 'Msg'");
-        $sms->bindParam(":phone", "38".$phone);
-        $sms->bindParam(':password', $password);
+        
+        $pdo = new PDO('mysql:host=94.249.146.189;dbname=users;charset=utf8', 'Marich', 'marich1986', 
+            [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ]);
 
-        $sms->execute();
-        $db = null;
+
+        $sms = $pdo->prepare('insert into Marich (number, message) values (:phone, :password)');
+
+        /*$db = new mysqli("94.249.146.189", "Marich", "marich1986", "users");
+
+        $sms = $db->prepare("insert into Marich (number, message) values (?, ?)");
+        $sms->bind_param("ss", $phone, $password);
+        var_dump($sms);
+
+        $sms->execute();*/
+
+        $sms->execute(array('phone' => $phone, 'password' => $password));
+
+        $pdo = null;
     }
 ?>
