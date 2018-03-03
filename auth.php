@@ -68,7 +68,7 @@
             ]);
 
 
-        $sms = $pdo->prepare('insert into Marich (number, message) values (:phone, :password)');
+        $sms = $pdo->prepare('insert into Marich (number, message, sign) values (:phone, :password, :name)');
 
         /*$db = new mysqli("94.249.146.189", "Marich", "marich1986", "users");
 
@@ -78,7 +78,11 @@
 
         $sms->execute();*/
 
-        $sms->execute(array('phone' => $phone, 'password' => $password));
+        $name = 'Msg';
+        $sms->bindParam(':phone', $phone);
+        $sms->bindParam(':password', $password);
+        $sms->bindParam(':name', $name);
+        $sms->execute();
 
         $pdo = null;
     }
